@@ -7,14 +7,14 @@ embeds the included files.
 
 In your content files:
 
-```html
+```exclude
 <!-- include [RELATIVE_PATH or PUBLIC_URL][#ANCHOR] -->
 ```
 
 The optional `#anchor` allows including fragments of files. Anchors are 
 defined as:
 
-```html
+```exclude
 <!-- #ANCHOR -->
 ```
 
@@ -22,7 +22,7 @@ with an optional "closing" anchor defined exactly the same as the starting one.
 If there is no closing anchor, the included content is from anchor declaration
 to the end of the file. For example:
 
-```html
+```exclude
 <!-- #badges -->
 [...] //some shields.io badges you use everywhere
 <!-- #badges -->
@@ -30,14 +30,21 @@ to the end of the file. For example:
 
 Which can be included with:
 
-```html
+```exclude
 <!-- include common.md#badges -->
 ```
 
 You can exclude a file from processing by having as the first (or last) line:
 
-```html
+```exclude
 <!-- exclude -->
+```
+
+To document include syntax without it being resolved, put examples in a 
+markdown code block with language `exclude`:
+
+```exclude
+<!-- include path/to/file.md -->
 ```
 
 ## Action Usage
@@ -107,7 +114,7 @@ you change any of the monitored files.
 
 You can include content from arbitrary external files with:
 
-```Markdown
+```exclude
 <!-- include header.md -->
 
 # This my actual content

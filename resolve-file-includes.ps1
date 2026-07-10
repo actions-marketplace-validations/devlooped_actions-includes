@@ -20,9 +20,19 @@ foreach ($file in $files) {
         continue
     }
 
+    # Mask ```exclude code blocks so their content is not processed.
+    # This allows documenting include syntax without resolving it.
+    $excludeBlocks = [System.Collections.Generic.List[string]]::new()
+    $content = [regex]::Replace($content, '(?m)^```exclude\s*\r?\n[\s\S]*?^```\s*$', {
+        param($match)
+        $index = $excludeBlocks.Count
+        [void]$excludeBlocks.Add($match.Value)
+        return "<!-- EXCLUDE_BLOCK_$index -->"
+    })
+
     $replacements = @{}
-    foreach ($match in (Select-String -Pattern '<!--\s?include (.*?)\s?-->' -Path $file)) {
-        $includedPath = ($match.Matches[0].Value -replace '<!--\s?include ','' -replace '\s?-->', '').Trim()
+    foreach ($match in [regex]::Matches($content, '<!--\s?include (.*?)\s?-->')) {
+        $includedPath = $match.Groups[1].Value.Trim()
         $fragment = $null
         if ($includedPath.Contains('#')) {
             $fragment = '#' + $includedPath.Split('#')[1]
@@ -81,7 +91,14 @@ foreach ($file in $files) {
             #Write-Host "Replacing $($replacement.Key) with $($replacement.Value)"
             $content = $content -replace $replacement.Key, $replacement.Value
         }
+    }
 
+    # Restore masked ```exclude code blocks
+    for ($i = 0; $i -lt $excludeBlocks.Count; $i++) {
+        $content = $content.Replace("<!-- EXCLUDE_BLOCK_$i -->", $excludeBlocks[$i])
+    }
+
+    if ($replacements.Count -gt 0) {
         $content = $content.TrimEnd()
         $actual = (Get-Content $file -Raw -Encoding UTF8).TrimEnd()
         
